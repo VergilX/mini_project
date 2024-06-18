@@ -43,10 +43,10 @@ def delete(encoding, key):
     # no error checks as of now
     with session(engine) as session:
         # fetch entity
-        if encoding == user:
+        if encoding == USER:
             statement = select(user).where(user.email == key)
 
-        elif encoding == doctor:
+        elif encoding == DOCTOR:
             statement = select(doctor).where(doctor.name == key)
 
         elif encoding == HOSPITAL:
