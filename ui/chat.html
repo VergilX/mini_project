@@ -1,0 +1,73 @@
+<!--
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h3>WebSocket Chat</h3>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" name="message" autocomplete="off">
+            <button type="button">Send</button>
+        </form>
+        <ul id="messages">
+        </ul>
+    </body>
+
+    <script>
+        var ws = new WebSocket("ws://localhost:8000/ws");
+
+        ws.onmessage = function(event) {
+            var messages = document.getElementById('messages')
+            var message = document.createElement('li')
+            var content = document.createTextNode(event.data)
+            message.appendChild(content)
+            messages.appendChild(message)
+        };
+
+        function sendMessage(event) {
+            console.log("hahahhaha")
+            var input = document.getElementById("message")
+            ws.send(input.value)
+            input.value = ''
+            event.preventDefault()
+        }
+    </script>
+</html>
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var user_id = prompt("user: ")
+            var ws = new WebSocket(`ws://localhost:8000/ws/${user_id}`);
+            ws.onmessage = function(event) {
+                console.log(`eventdata: ${event.data}`)
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                console.log("sending message to socket")
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
