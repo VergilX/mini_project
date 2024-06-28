@@ -52,7 +52,8 @@
         </ul>
         <script>
             var user_id = prompt("user: ")
-            var ws = new WebSocket(`ws://localhost:8000/ws/${user_id}`);
+            var target_id = prompt("target user: ")
+            var ws = new WebSocket(`ws://localhost:8000/ws/${user_id}/${target_id}`);
             ws.onmessage = function(event) {
                 console.log(`eventdata: ${event.data}`)
                 var messages = document.getElementById('messages')

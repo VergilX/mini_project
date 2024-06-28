@@ -1,7 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, WebSocket, HTTPException, status
+from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr
 from typing import Annotated
 
@@ -29,15 +33,6 @@ fake_users_db = {
         "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
         "disabled": False,
     },
-
-    "abhinand": {
-        "username": "abhinand",
-        "full_name": "Abhinand D Manoj",
-        "email": "abhinand.dmanoj@gmail.com",
-        "hashed_password": "blah",
-        "disabled": False,
-    }
-
 }
 
 
@@ -64,20 +59,56 @@ class TokenData(BaseModel):
 
 CURRENT_USERS = dict()
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+templates = Jinja2Templates(directory="ui")
 
 app = FastAPI()
 
+# Middleware
 
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# CSS and JS
+app.mount("/css", StaticFiles(directory="ui/css"), name="css")
+app.mount("/js", StaticFiles(directory="ui/js"), name="js")
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_get(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="login.html"
+    )
+
+
+@app.post("/login")
 def login():
     pass
 
 
+@app.get("/register", response_class=HTMLResponse)
+async def register_get(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="register.html"
+    )
+
+
 @app.post("/register")
-def register(
+async def register(
     name: str,
     username: str,
     password: str,
@@ -97,11 +128,8 @@ def register(
     return "User registered successfully"
 
 
+# You don't log out with jwt
 def logout():
-    pass
-
-
-def is_logged_in():
     pass
 
 
@@ -142,19 +170,44 @@ def authenticate_user(fake_db, username: str, password: str):
     return user
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+def check_header_token(Authorization: Annotated[str | None, Cookie()] = None):
+    """ Function checks header for Bearer token """
+
+    if Authorization is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header not available",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    cookie_components = Authorization.split()
+    print(cookie_components)
+    if cookie_components[0] == "Bearer" and len(cookie_components) == 2:
+        return cookie_components[1]
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid cookie format",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+async def get_current_user(token: Annotated[str, Depends(check_header_token)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        print("means most likely Bearer cookie is present", token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
+            print("No username in decoded token")
             raise credentials_exception
         token_data = TokenData(username=username)
     except InvalidTokenError:
+        print("InvalidTokenError")
         raise credentials_exception
     user = get_user(fake_users_db, username=token_data.username)
     if user is None:
@@ -174,23 +227,22 @@ async def get_current_active_user(
 async def get_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     ) -> Token:
-    print(fake_users_db)
-    print(f"form username: {form_data.username}, form password: {form_data.password}")
+    print("database:", fake_users_db)
     user = authenticate_user(fake_users_db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-            data={"sub": user.username}, expires_delta=access_token_expires
-        )
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get("/home", response_model=User)
+@app.get("/home")
 async def home(
         current_user: Annotated[User, Depends(get_current_active_user)],
     ):

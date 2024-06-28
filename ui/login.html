@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Login</title>
+    </head>
+    <body>
+        <h1>Login</h1>
+            <input type="text" name="username" id="username" placeholder="Enter username">
+            <input type="password" name="password" id="password" placeholder="Enter password">
+
+            <input type="submit" id="login" value="LOGIN">
+    </body>
+    <script src="{{ url_for('js', path='/login.js') }}"></script>
+</html>
