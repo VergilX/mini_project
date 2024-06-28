@@ -1,4 +1,4 @@
-from db_models import *
+from db.db_models import *
 from sqlmodel import Session, select
 
 # Encoding
@@ -37,6 +37,38 @@ def create(encoding, data):
         print("Committed changes")
 
 
+def get_entity(encoding, key):
+    """ Function to retrieve entity from db """
+
+    # no error checks as of now
+    with session(engine) as session:
+        # fetch entity
+        if encoding == USER:
+            statement = select(user).where(User.email == key)
+
+        elif encoding == DOCTOR:
+            statement = select(doctor).where(Doctor.name == key)
+
+        elif encoding == HOSPITAL:
+            statement = select(Hospital).where(Hospital.name == key)
+
+        elif encoding == CHAT:
+            statement = select(Chat).where(Chat.id == key)
+
+        elif encoding == DISEASE:
+            statement = select(Disease).where(Disease.name == key)
+
+        result = session.exec(statement)
+        entity = result.first()
+
+        # if found, return
+        if entity is not None:
+            return entity
+        else:
+            print("No entry to delete")
+            return dict(message="no such entry")
+
+
 def delete(encoding, key):
     """ function to delete entry from right table """
 
@@ -44,10 +76,10 @@ def delete(encoding, key):
     with session(engine) as session:
         # fetch entity
         if encoding == USER:
-            statement = select(user).where(user.email == key)
+            statement = select(user).where(User.email == key)
 
         elif encoding == DOCTOR:
-            statement = select(doctor).where(doctor.name == key)
+            statement = select(doctor).where(Doctor.name == key)
 
         elif encoding == HOSPITAL:
             statement = select(Hospital).where(Hospital.name == key)

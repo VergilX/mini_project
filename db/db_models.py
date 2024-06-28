@@ -9,9 +9,9 @@ class User(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     name: str
-    username: str
+    username: str = Field(unique=True, index=True)
     password: str  # already hashed
-    email: EmailStr = Field(index=True)
+    email: EmailStr
     district: str
 
 
@@ -39,8 +39,8 @@ class Hospital(SQLModel, table=True):
 
 class Chat(SQLModel, table=True):
     id: int | None = Field(default=None, index=True, primary_key=True)
-    user_id: int | None = Field(default=None, foreign_key="Users.id")
-    doctor_id: int | None = Field(default=None, foreign_key="Doctors.id")
+    user_id: str | None = Field(default=None, foreign_key="Users.id")
+    doctor_id: str | None = Field(default=None, foreign_key="Doctors.id")
     message: str
 
 
