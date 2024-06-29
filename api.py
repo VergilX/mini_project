@@ -14,7 +14,7 @@ from jwt.exceptions import InvalidTokenError
 
 from passlib.context import CryptContext
 
-from db.db_actions import *
+from db.actions import *
 
 
 # token
