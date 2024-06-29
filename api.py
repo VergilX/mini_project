@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie
+from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -14,7 +14,8 @@ from jwt.exceptions import InvalidTokenError
 
 from passlib.context import CryptContext
 
-from db.actions import *
+import db.actions as database
+import db.models as models
 
 
 # token
@@ -38,10 +39,11 @@ fake_users_db = {
 
 # schemas (must import from db/models.py)
 class User(BaseModel):
+    name: str | None = None
     username: str
     email: str | None = None
-    full_name: str | None = None
-    disabled: bool | None = None
+    password: str
+    district: str
 
 
 class UserInDB(User):
@@ -109,23 +111,33 @@ async def register_get(request: Request):
 
 @app.post("/register")
 async def register(
-    name: str,
-    username: str,
-    password: str,
-    email: EmailStr,
-    district: str = None
+    name: Annotated[str | None, Form()],
+    username: Annotated[str | None, Form()],
+    email: Annotated[EmailStr | None, Form()],
+    password: Annotated[str | None, Form()],
+    district: Annotated[str | None, Form()],
     ):
     data = dict(
+        name=name,
         username=username,
-        full_name=name,
         email=email,
         hashed_password=get_password_hash(password),
-        disabled=False
+        district=district
     )
 
-    fake_users_db[username] = data
-    print(fake_users_db)
-    return "User registered successfully"
+    # Check if present in db, if yes, error else create
+    user = database.get_entity(database.USER, data['email'])
+    if user is not None:
+        print("User already present in db")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,  # change the code
+            detail="Email already used",
+        )
+
+    database.create(database.USER, data)
+    return {
+        "detail": "User registered successfully",
+    }
 
 
 # You don't log out with jwt

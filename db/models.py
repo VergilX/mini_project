@@ -10,7 +10,7 @@ class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     username: str = Field(unique=True, index=True)
-    password: str  # already hashed
+    hashed_password: str  # already hashed
     email: EmailStr
     district: str
 
@@ -71,8 +71,9 @@ class Districts(SQLModel, table=True):
     name: str = Field(unique=True, index=True)
 
 
-sqlite_file_name = "db.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+# Relative to root of project
+sqlite_file_path = "db.db"
+sqlite_url = f"sqlite:///{sqlite_file_path}"
 
 engine = create_engine(sqlite_url, echo=True)
 

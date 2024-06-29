@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <html>
     <head>
         <title>Register</title>
@@ -6,7 +8,7 @@
     </head>
     <body>
         <h1>Register</h1>
-        <form action="{{ url_for('register') }}">
+        <form action="{{ url_for('register') }}" method="POST">
             <input type="text" name="name" placeholder="Enter name" required>
             <input type="text" name="username" placeholder="Enter username" required>
             <input type="password" name="password" placeholder="Enter password" required>

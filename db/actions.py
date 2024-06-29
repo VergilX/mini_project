@@ -1,4 +1,4 @@
-from db.db_models import *
+from db.models import *
 from sqlmodel import Session, select
 
 # Encoding
@@ -16,7 +16,6 @@ def create(encoding, data):
     with Session(engine) as session:
         # create entity
         if encoding == USER:
-
             entity = User(**data)
 
         elif encoding == DOCTOR:
@@ -41,13 +40,13 @@ def get_entity(encoding, key):
     """ Function to retrieve entity from db """
 
     # no error checks as of now
-    with session(engine) as session:
+    with Session(engine) as session:
         # fetch entity
         if encoding == USER:
-            statement = select(user).where(User.email == key)
+            statement = select(User).where(User.email == key)
 
         elif encoding == DOCTOR:
-            statement = select(doctor).where(Doctor.name == key)
+            statement = select(Doctor).where(Doctor.name == key)
 
         elif encoding == HOSPITAL:
             statement = select(Hospital).where(Hospital.name == key)
@@ -61,25 +60,26 @@ def get_entity(encoding, key):
         result = session.exec(statement)
         entity = result.first()
 
+        print("Entity:", entity)
         # if found, return
         if entity is not None:
             return entity
         else:
             print("No entry to delete")
-            return dict(message="no such entry")
+            return None
 
 
 def delete(encoding, key):
     """ function to delete entry from right table """
 
     # no error checks as of now
-    with session(engine) as session:
+    with Session(engine) as session:
         # fetch entity
         if encoding == USER:
-            statement = select(user).where(User.email == key)
+            statement = select(User).where(User.email == key)
 
         elif encoding == DOCTOR:
-            statement = select(doctor).where(Doctor.name == key)
+            statement = select(Doctor).where(Doctor.name == key)
 
         elif encoding == HOSPITAL:
             statement = select(Hospital).where(Hospital.name == key)
@@ -113,4 +113,4 @@ if __name__ == "__main__":
             email="luckyman@gmail.com",
             district="Ernakulam"
             )
-    delete(USER, key="luckyman@gmail.com")
+    print(get_entity(USER, data.email))
