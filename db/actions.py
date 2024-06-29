@@ -43,7 +43,7 @@ def get_entity(encoding, key):
     with Session(engine) as session:
         # fetch entity
         if encoding == USER:
-            statement = select(User).where(User.email == key)
+            statement = select(User).where(User.username == key)
 
         elif encoding == DOCTOR:
             statement = select(Doctor).where(Doctor.name == key)

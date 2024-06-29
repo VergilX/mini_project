@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form
+from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -17,6 +17,12 @@ from passlib.context import CryptContext
 import db.actions as database
 import db.models as models
 
+"""
+Notes:
+
+[ ] Use classes for requests; eg: user registration
+
+"""
 
 # token
 # to get a string like this run:
@@ -42,7 +48,6 @@ class User(BaseModel):
     name: str | None = None
     username: str
     email: str | None = None
-    password: str
     district: str
 
 
@@ -126,7 +131,7 @@ async def register(
     )
 
     # Check if present in db, if yes, error else create
-    user = database.get_entity(database.USER, data['email'])
+    user = database.get_entity(database.USER, data['username'])
     if user is not None:
         print("User already present in db")
         raise HTTPException(
@@ -145,43 +150,11 @@ def logout():
     pass
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
 def get_password_hash(password):
     return pwd_context.hash(password)
 
 
 # Getting user from database
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
-
-
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
-    if not user:
-        print("no username in db")
-        return False
-    if not verify_password(password, user.hashed_password):
-        print("encrypted password verification failed")
-        return False
-    return user
-
-
 def check_header_token(Authorization: Annotated[str | None, Cookie()] = None):
     """ Function checks header for Bearer token """
 
@@ -193,7 +166,6 @@ def check_header_token(Authorization: Annotated[str | None, Cookie()] = None):
         )
 
     cookie_components = Authorization.split()
-    print(cookie_components)
     if cookie_components[0] == "Bearer" and len(cookie_components) == 2:
         return cookie_components[1]
     else:
@@ -213,6 +185,7 @@ async def get_current_user(token: Annotated[str, Depends(check_header_token)]):
     try:
         print("means most likely Bearer cookie is present", token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print("Payload:", payload)
         username: str = payload.get("sub")
         if username is None:
             print("No username in decoded token")
@@ -221,26 +194,70 @@ async def get_current_user(token: Annotated[str, Depends(check_header_token)]):
     except InvalidTokenError:
         print("InvalidTokenError")
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = database.get_entity(database.USER, key=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 
+# idk if this is needed
+"""
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
     ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+"""
+
+
+@app.get("/home", response_class=HTMLResponse)
+async def home(
+        request: Request,
+        current_user: Annotated[User, Depends(get_current_user)],
+    ):
+    # Return user home page
+    return templates.TemplateResponse(
+        request=request,
+        name="home.html",
+        context={
+            "user": current_user,
+        }
+    )
+
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def authenticate_user(username: str, password: str):
+    user = database.get_entity(database.USER, key=username)
+    if not user:
+        print("no username in db")
+        return False
+    if not verify_password(password, user.hashed_password):
+        print("encrypted password verification failed")
+        return False
+    return user
 
 
 @app.post("/token")
 async def get_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     ) -> Token:
-    print("database:", fake_users_db)
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -252,14 +269,6 @@ async def get_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
-
-
-@app.get("/home")
-async def home(
-        current_user: Annotated[User, Depends(get_current_active_user)],
-    ):
-    # Return user details
-    return current_user
 
 
 # Chat stuff
