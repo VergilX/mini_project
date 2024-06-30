@@ -14,6 +14,8 @@ from jwt.exceptions import InvalidTokenError
 
 from passlib.context import CryptContext
 
+
+from sqlmodel import Session, select
 import db.actions as database
 import db.models as models
 
@@ -30,17 +32,6 @@ Notes:
 SECRET_KEY = "103446f45914523b72b1caefb899a9aa9271e9c25bd63eb05c751aa1fd63e901"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False,
-    },
-}
 
 
 # schemas (must import from db/models.py)
@@ -145,7 +136,7 @@ async def register(
     }
 
 
-# You don't log out with jwt
+# You don't log out with jwt in backend
 def logout():
     pass
 
@@ -226,7 +217,6 @@ async def home(
     )
 
 
-
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
@@ -272,6 +262,27 @@ async def get_access_token(
 
 
 # Chat stuff
+@app.get("/chat-list")
+async def chat_page(
+        request: Request,
+        user: Annotated[User, Depends(get_current_user)],
+    ):
+
+    # Get names of doctors with chats and last message
+    with Session(models.engine) as session:
+        query = select(models.Chat, models.Doctor).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
+
+        result = session.exec(query)
+
+        return templates.TemplateResponse(
+            request=request,
+            name="listchat.html",
+            context={
+                "chats": result
+            }
+        )
+
+
 # Everyone connected to the websocket will get the messages
 @app.websocket("/ws/{user_id}/{target_id}")
 async def websocket_endpoint(user_id: str, target_id: str, websocket: WebSocket):

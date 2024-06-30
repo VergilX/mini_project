@@ -32,12 +32,15 @@ class Hospital(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
-    district: str
+    district: str | None = Field(default=None, foreign_key="Districts.id")
     location: str = ""
     reputation: int | None = 0
 
 
 class Chat(SQLModel, table=True):
+
+    __tablename__ = "Chat"
+
     id: int | None = Field(default=None, index=True, primary_key=True)
     user_id: str | None = Field(default=None, foreign_key="Users.id")
     doctor_id: str | None = Field(default=None, foreign_key="Doctors.id")
@@ -68,7 +71,8 @@ class Districts(SQLModel, table=True):
     __tablename__ = "Districts"
 
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True, index=True)
+    name: str = Field(unique=True)
+    code: str = Field(unique=True, index=True)
 
 
 # Relative to root of project
