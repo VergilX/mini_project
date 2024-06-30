@@ -48,7 +48,11 @@
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
         </form>
+        <h3>{{ doctor.name }}</h3>
         <ul id='messages'>
+            {% for chat in chats %}
+                <li>{{ chat }}</li>
+            {% endfor %}
         </ul>
         <script>
             var user_id = prompt("user: ")

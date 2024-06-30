@@ -14,7 +14,7 @@ from jwt.exceptions import InvalidTokenError
 
 from passlib.context import CryptContext
 
-
+from sqlalchemy import distinct
 from sqlmodel import Session, select
 import db.actions as database
 import db.models as models
@@ -270,7 +270,7 @@ async def chat_page(
 
     # Get names of doctors with chats and last message
     with Session(models.engine) as session:
-        query = select(models.Chat, models.Doctor).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
+        query = select(distinct(models.Doctor.name)).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
 
         result = session.exec(query)
 
@@ -278,7 +278,30 @@ async def chat_page(
             request=request,
             name="listchat.html",
             context={
-                "chats": result
+                "doctors": result
+            }
+        )
+
+
+@app.get("/chat/{doctor_id}")
+async def chat(
+    request: Request,
+    doctor_id: int,
+    user: Annotated[User, Depends(get_current_user)],
+    ):
+    doctor = database.get_entity(database.DOCTOR, doctor_id)
+
+    with Session(models.engine) as session:
+        query = select(models.Chat.message).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
+
+        chats = session.exec(query)
+
+        return templates.TemplateResponse(
+            request=request,
+            name="chat.html",
+            context={
+                "doctor": doctor,
+                "chats": chats,
             }
         )
 

@@ -46,7 +46,7 @@ def get_entity(encoding, key):
             statement = select(User).where(User.username == key)
 
         elif encoding == DOCTOR:
-            statement = select(Doctor).where(Doctor.name == key)
+            statement = select(Doctor).where(Doctor.id == key)
 
         elif encoding == HOSPITAL:
             statement = select(Hospital).where(Hospital.name == key)
@@ -79,7 +79,7 @@ def delete(encoding, key):
             statement = select(User).where(User.email == key)
 
         elif encoding == DOCTOR:
-            statement = select(Doctor).where(Doctor.name == key)
+            statement = select(Doctor).where(Doctor.id == key)
 
         elif encoding == HOSPITAL:
             statement = select(Hospital).where(Hospital.name == key)
