@@ -48,28 +48,36 @@
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
         </form>
-        <h3>{{ doctor.name }}</h3>
+        <h3>{{ target.name }}</h3>
         <ul id='messages'>
             {% for chat in chats %}
                 <li>{{ chat }}</li>
             {% endfor %}
         </ul>
         <script>
-            var user_id = prompt("user: ")
-            var target_id = prompt("target user: ")
-            var ws = new WebSocket(`ws://localhost:8000/ws/${user_id}/${target_id}`);
+            // var user_id = prompt("user: ")
+            // var target_id = prompt("target user: ")
+            var user = "{{ user.username }}";
+            var target_id = "{{ target.username }}";
+            console.log(`user: ${user}, target_id: ${target_id}`);
+            var ws = new WebSocket(`ws://localhost:8000/ws/${target_id}`);
             ws.onmessage = function(event) {
                 console.log(`eventdata: ${event.data}`)
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
+
+                var index = event.data.indexOf(":");
+
+                // Remove username for real_time message
+                var content = document.createTextNode(event.data.substr(index+2))
                 message.appendChild(content)
                 messages.appendChild(message)
             };
             function sendMessage(event) {
                 console.log("sending message to socket")
                 var input = document.getElementById("messageText")
-                ws.send(input.value)
+                data = `${user}: ${input.value}`
+                ws.send(data)
                 input.value = ''
                 event.preventDefault()
             }

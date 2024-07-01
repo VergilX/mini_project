@@ -20,7 +20,8 @@ class Doctor(SQLModel, table=True):
     __tablename__ = "Doctors"
 
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(index=True)
+    name: str
+    username: str = Field(unique=True, index=True)
     hosp_id: int | None = Field(default=None, foreign_key="Hospitals.id")
     specialisation_id: int | None = Field(default=None, foreign_key="Specialisation.id")
     successful: int = 0
@@ -32,7 +33,7 @@ class Hospital(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
-    district: str | None = Field(default=None, foreign_key="Districts.id")
+    district: int | None = Field(default=None, foreign_key="Districts.id")
     location: str = ""
     reputation: int | None = 0
 

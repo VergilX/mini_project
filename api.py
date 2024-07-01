@@ -15,7 +15,7 @@ from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
 from sqlalchemy import distinct
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 import db.actions as database
 import db.models as models
 
@@ -283,16 +283,28 @@ async def chat_page(
         )
 
 
-@app.get("/chat/{doctor_id}")
+@app.get("/chat/{t_username}")
 async def chat(
     request: Request,
-    doctor_id: int,
-    user: Annotated[User, Depends(get_current_user)],
+    t_username: str,
+    current_user: Annotated[User, Depends(get_current_user)],
     ):
-    doctor = database.get_entity(database.DOCTOR, doctor_id)
+    user = database.get_entity(database.USER, t_username)
+    if user is None:
+        user = database.get_entity(database.DOCTOR, t_username)
+
+        if user is None:
+            print("Invalid target username")
+            return {
+                    "detail": "Invalid target username"
+            }
 
     with Session(models.engine) as session:
-        query = select(models.Chat.message).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
+        # query = select(models.Chat.message).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
+        query = select(models.Chat.message).where(
+            ((models.Chat.user_id == user.id) & (models.Chat.doctor_id == current_user.id)) | 
+            ((models.Chat.user_id == current_user.id) & (models.Chat.doctor_id == user.id))
+        )
 
         chats = session.exec(query)
 
@@ -300,32 +312,59 @@ async def chat(
             request=request,
             name="chat.html",
             context={
-                "doctor": doctor,
+                "user": current_user,
+                "target": user,
                 "chats": chats,
             }
         )
 
 
 # Everyone connected to the websocket will get the messages
-@app.websocket("/ws/{user_id}/{target_id}")
-async def websocket_endpoint(user_id: str, target_id: str, websocket: WebSocket):
+@app.websocket("/ws/{t_username}")
+async def websocket_endpoint(
+        current_user: Annotated[User, Depends(get_current_user)],
+        t_username: str,
+        websocket: WebSocket
+    ):
     await websocket.accept()
-    print("client: ", user_id)
+    print("client: ", current_user.username)
 
-    CURRENT_USERS[user_id] = websocket
+    # Check if t_username is valid doctor/user
+    target = database.get_entity(database.USER, t_username)
+    if target is None:
+        target = database.get_entity(database.DOCTOR, t_username)
+
+        if target is None:
+            print("Invalid target username")
+            return {
+                    "detail": "Invalid target username"
+            }
+
+
+    CURRENT_USERS[current_user.username] = websocket
     print(CURRENT_USERS)
 
     try:
         while True:
-            data = await websocket.receive_text()
+            # Not using database.create() as it opens session for 
+            # each message
+            with Session(database.engine) as session:
+                data = await websocket.receive_text()
 
-            # Send data to target
-            for user, user_ws in CURRENT_USERS.items():
-                if user in [target_id, user_id]:
-                    await user_ws.send_text(f"{user_id}: {data}")
+                # Send data to target
+                for user, user_ws in CURRENT_USERS.items():
+                    if user in [t_username, current_user.username]:
+                        await user_ws.send_text(f"{current_user.username}: {data}")
 
-            # write code to save to database
+                # write code to save to database
+                new_chat = models.Chat(
+                    user_id=current_user.id,
+                    doctor_id=target.id,
+                    message=data
+                )
+                session.add(new_chat)
+                session.commit()
     except WebSocketDisconnect:
         # Exception already does websocket.close()
-        del CURRENT_USERS[user_id]
-        print(f"{user_id} has disconnected")
+        del CURRENT_USERS[current_user.username]
+        print(f"{current_user.username} has disconnected")
