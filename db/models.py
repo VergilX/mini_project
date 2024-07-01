@@ -22,6 +22,8 @@ class Doctor(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     username: str = Field(unique=True, index=True)
+    hashed_password: str  # already hashed
+    email: EmailStr
     hosp_id: int | None = Field(default=None, foreign_key="Hospitals.id")
     specialisation_id: int | None = Field(default=None, foreign_key="Specialisation.id")
     successful: int = 0

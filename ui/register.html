@@ -3,7 +3,6 @@
 <html>
     <head>
         <title>Register</title>
-        <script src="js/register.js"></script>
         </script>
     </head>
     <body>
@@ -16,10 +15,9 @@
 
             <label for="cars">Select District:</label>
             <select name="district" value="Select district">
-                <option value="EKM">Ernakulam</option>
-                <option value="THR">Thrissur</option>
-                <option value="PKD">Palakkad</option>
-                <option value="KGD">Kasargod</option>
+                {% for district in districts %}
+                    <option value="{{ district.code }}">{{ district.name }}</option>
+                {% endfor %}
             </select>
 
             <input type="submit" name="" value="REGISTER">

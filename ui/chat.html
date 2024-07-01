@@ -68,7 +68,7 @@
 
                 var index = event.data.indexOf(":");
 
-                // Remove username for real_time message
+                // Remove duplicate name for real_time message
                 var content = document.createTextNode(event.data.substr(index+2))
                 message.appendChild(content)
                 messages.appendChild(message)
@@ -76,7 +76,7 @@
             function sendMessage(event) {
                 console.log("sending message to socket")
                 var input = document.getElementById("messageText")
-                data = `${user}: ${input.value}`
+                data = `{{ user.name }}: ${input.value}`
                 ws.send(data)
                 input.value = ''
                 event.preventDefault()

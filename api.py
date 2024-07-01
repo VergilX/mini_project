@@ -100,9 +100,17 @@ def login():
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_get(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="register.html"
-    )
+    # Get districts
+    with Session(models.engine) as session:
+        query = select(models.Districts)
+        result = session.exec(query)
+
+        return templates.TemplateResponse(
+            request=request, name="register.html",
+            context={
+                "districts": result,
+            }
+        )
 
 
 @app.post("/register")
@@ -133,6 +141,61 @@ async def register(
     database.create(database.USER, data)
     return {
         "detail": "User registered successfully",
+    }
+
+
+# Doctor registration
+@app.get("/register-doc", response_class=HTMLResponse)
+async def register_get(request: Request):
+    # Get districts
+    with Session(models.engine) as session:
+        hosp_query = select(models.Hospital)
+        specialisation_query = select(models.Specialisation)
+
+        hospitals = session.exec(hosp_query)
+        specialisations = session.exec(specialisation_query)
+
+        return templates.TemplateResponse(
+            request=request, name="register_doc.html",
+            context={
+                "hospitals": hospitals,
+                "specialisations": specialisations
+            }
+        )
+
+
+@app.post("/register-doc")
+async def register_doc(
+    name: Annotated[str | None, Form()],
+    username: Annotated[str | None, Form()],
+    email: Annotated[EmailStr | None, Form()],
+    password: Annotated[str | None, Form()],
+    hosp_id: Annotated[int | None, Form()],
+    specialisation_id: Annotated[int | None, Form()],
+    successful: Annotated[int | None, Form()],
+    ):
+    data = dict(
+        name="Dr. "+name,
+        username=username,
+        email=email,
+        hashed_password=get_password_hash(password),
+        hosp_id=hosp_id,
+        specialisation_id=specialisation_id,
+        successful=successful,
+    )
+
+    # Check if present in db, if yes, error else create
+    user = database.get_entity(database.DOCTOR, data['username'])
+    if user is not None:
+        print("Doctor already present in db")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,  # change the code
+            detail="Doctor username already used",
+        )
+
+    database.create(database.DOCTOR, data)
+    return {
+        "detail": "Doctor registered successfully",
     }
 
 
@@ -187,7 +250,10 @@ async def get_current_user(token: Annotated[str, Depends(check_header_token)]):
         raise credentials_exception
     user = database.get_entity(database.USER, key=token_data.username)
     if user is None:
-        raise credentials_exception
+        # for doctor
+        user = database.get_entity(database.DOCTOR, key=token_data.username)
+        if user is None:
+            raise credentials_exception
     return user
 
 
@@ -235,8 +301,11 @@ def verify_password(plain_password, hashed_password):
 def authenticate_user(username: str, password: str):
     user = database.get_entity(database.USER, key=username)
     if not user:
-        print("no username in db")
-        return False
+        # for doctor
+        user = database.get_entity(database.DOCTOR, key=username)
+        if not user:
+            print("no username in db")
+            return False
     if not verify_password(password, user.hashed_password):
         print("encrypted password verification failed")
         return False
