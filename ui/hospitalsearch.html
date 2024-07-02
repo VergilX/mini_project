@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Search</title>
+    </head>
+    <body>
+        <ul>
+            {% for hospital in hospitals %}
+                <li><a href="{{ url_for('doc_search', hosp_id=hospital.id) }}">{{ hospital.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

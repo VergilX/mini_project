@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Search</title>
+    </head>
+    <body>
+        <ul>
+            {% for doc in doctors %}
+                <li><a href="{{ url_for('chat', t_username=doc.username) }}">{{ doc.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

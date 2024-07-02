@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form, WebSocketDisconnect
+from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form, WebSocketDisconnect, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr
-from typing import Annotated
+from typing import Annotated, Optional
 
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -86,6 +86,14 @@ app.mount("/css", StaticFiles(directory="ui/css"), name="css")
 app.mount("/js", StaticFiles(directory="ui/js"), name="js")
 
 
+@app.get("/")
+async def landing(request: Request):
+    return templates.TemplateResponse(
+            request=request,
+            name="index.html"
+    )
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_get(request: Request):
     return templates.TemplateResponse(
@@ -120,6 +128,7 @@ async def register(
     email: Annotated[EmailStr | None, Form()],
     password: Annotated[str | None, Form()],
     district: Annotated[str | None, Form()],
+    request: Request,
     ):
     data = dict(
         name=name,
@@ -133,6 +142,13 @@ async def register(
     user = database.get_entity(database.USER, data['username'])
     if user is not None:
         print("User already present in db")
+        return templates.TemplateResponse(
+                request=request,
+                name="error.html",
+                context={
+                    "error": "Username already in use",
+                }
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,  # change the code
             detail="Email already used",
@@ -173,6 +189,7 @@ async def register_doc(
     hosp_id: Annotated[int | None, Form()],
     specialisation_id: Annotated[int | None, Form()],
     successful: Annotated[int | None, Form()],
+    request: Request,
     ):
     data = dict(
         name="Dr. "+name,
@@ -188,6 +205,13 @@ async def register_doc(
     user = database.get_entity(database.DOCTOR, data['username'])
     if user is not None:
         print("Doctor already present in db")
+        return templates.TemplateResponse(
+                request=request,
+                name="error.html",
+                context={
+                    "error": "Doctor username already in use",
+                }
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,  # change the code
             detail="Doctor username already used",
@@ -299,6 +323,49 @@ async def home(
     )
 
 
+@app.get("/hp-search")
+async def hospitals(
+    current_user: Annotated[User, Depends(get_current_user)],
+    request: Request,
+    ):
+
+    with Session(models.engine) as session:
+        query = select(models.Hospital)
+        result = session.exec(query)
+
+        return templates.TemplateResponse(
+                request=request,
+                name="hospitalsearch.html",
+                context={
+                    "hospitals": result
+                }
+        )
+
+
+@app.get("/doc-search/{hosp_id}")
+@app.get("/doc-search")
+async def doc_search(
+    current_user: Annotated[User, Depends(get_current_user)],
+    request: Request,
+    hosp_id: Optional[int] = None,
+    ):
+
+    with Session(models.engine) as session:
+        if hosp_id is None:
+            query = select(models.Doctor)
+        else:
+            query = select(models.Doctor).where(models.Doctor.hosp_id == hosp_id)
+        result = session.exec(query)
+
+        return templates.TemplateResponse(
+                request=request,
+                name="docsearch.html",
+                context={
+                    "doctors": result
+                }
+        )
+
+
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
@@ -393,6 +460,13 @@ async def chat(
 
         if user is None:
             print("Invalid target username")
+            return templates.TemplateResponse(
+                request=request,
+                name="error.html",
+                context={
+                    "error": "Invalid target username",
+                }
+            )
             return {
                     "detail": "Invalid target username"
             }
