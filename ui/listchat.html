@@ -6,8 +6,8 @@
     </head>
     <body>
         <ul>
-            {% for doctor in doctors %}
-                <li>{{ doctor }}</li>
+            {% for user in users %}
+            <li><a href="{{ url_for('chat', t_username=user.username) }}">{{ user.name }}</a></li>
             {% endfor %}
         </ul>
     </body>

@@ -274,11 +274,27 @@ async def home(
         current_user: Annotated[User, Depends(get_current_user)],
     ):
     # Return user home page
+
+    is_doctor = isinstance(current_user, models.Doctor)
+    hosp = sp = False
+
+    if is_doctor:
+        with Session(models.engine) as session:
+            hosp_query = select(models.Hospital.name).where(models.Hospital.id == current_user.hosp_id)
+            sp_query = select(models.Specialisation.name).where(models.Specialisation.id == current_user.hosp_id)
+
+            # Expecting single result
+            hosp = session.exec(hosp_query).first()
+            sp = session.exec(sp_query).first()
+
     return templates.TemplateResponse(
         request=request,
         name="home.html",
         context={
             "user": current_user,
+            "is_doctor": is_doctor,
+            "hosp": hosp,
+            "sp": sp,
         }
     )
 
@@ -337,17 +353,30 @@ async def chat_page(
         user: Annotated[User, Depends(get_current_user)],
     ):
 
-    # Get names of doctors with chats and last message
+    # Get names of doctors with chats and last message if possible
     with Session(models.engine) as session:
-        query = select(distinct(models.Doctor.name)).where(models.Chat.doctor_id == models.Doctor.id).where(models.Chat.user_id == user.id)
+        # If doctor get Doctor name
+        # else get User names
+        # Return results
 
-        result = session.exec(query)
+        if isinstance(user, models.Doctor):
+            query = select(models.User).where(or_(models.Chat.doctor_id == user.id, models.Chat.user_id == user.id))
+        else:
+            query = select(models.Doctor).where(or_(models.Chat.doctor_id == user.id, models.Chat.user_id == user.id))
+
+        users = session.exec(query)
+
+        # Filter distinct users
+        user_list = []
+        for user in users:
+            if user not in user_list:
+                user_list.append(user)
 
         return templates.TemplateResponse(
             request=request,
             name="listchat.html",
             context={
-                "doctors": result
+                "users": user_list,
             }
         )
 
