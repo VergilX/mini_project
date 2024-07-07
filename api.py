@@ -84,6 +84,7 @@ app.add_middleware(
 # CSS and JS
 app.mount("/css", StaticFiles(directory="ui/css"), name="css")
 app.mount("/js", StaticFiles(directory="ui/js"), name="js")
+app.mount("/assets", StaticFiles(directory="ui/assets"), name="assets")
 
 
 @app.get("/")
@@ -150,7 +151,7 @@ async def register(
                 }
         )
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,  # change the code
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email already used",
         )
 
@@ -511,7 +512,6 @@ async def websocket_endpoint(
             return {
                     "detail": "Invalid target username"
             }
-
 
     CURRENT_USERS[current_user.username] = websocket
     print(CURRENT_USERS)

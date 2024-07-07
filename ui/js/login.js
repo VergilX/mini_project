@@ -60,5 +60,5 @@ async function login(event) {
     }
 }
 
-let submit_button = document.getElementById("login");
+let submit_button = document.getElementById("submit");
 submit_button.addEventListener("click", login);
