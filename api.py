@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form, WebSocketDisconnect, Query
+from fastapi import Depends, FastAPI, WebSocket, HTTPException, status, Request, Cookie,  Form, WebSocketDisconnect, Query, File, UploadFile
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr
@@ -19,12 +19,44 @@ from sqlmodel import Session, select, or_
 import db.actions as database
 import db.models as models
 
-"""
-Notes:
+# Model specific libraries
+import torch
+import torch.nn as nn
+from torchvision import transforms
+from PIL import Image
+import io
 
-[ ] Use classes for requests; eg: user registration
+# Use the model architecture here
+class SimpleCNN(nn.Module):
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.fc1 = nn.Linear(64 * 64 * 64, 512)
+        self.fc2 = nn.Linear(512, 5)  # Ensure output size matches 5 classes
 
-"""
+    def forward(self, x):
+        x = self.pool(torch.relu(self.conv1(x)))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = x.view(-1, 64 * 64 * 64)
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+# Load the trained model
+device = "cpu"  # My system
+model = SimpleCNN()
+model.load_state_dict(torch.load('models/modelv2.pth', map_location=device))
+model.eval()
+
+# Define transformations for image preprocessing
+transform = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+
 
 # token
 # to get a string like this run:
@@ -540,3 +572,43 @@ async def websocket_endpoint(
         # Exception already does websocket.close()
         del CURRENT_USERS[current_user.username]
         print(f"{current_user.username} has disconnected")
+
+
+# ML Model integration
+@app.get("/diagnose")
+async def diagnose(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+    ):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="diagnose.html"
+    )
+
+
+@app.post("/predict")
+async def predict(
+    # user: Annotated[User, Depends(get_current_user)],
+    file: UploadFile = File(...),
+    ):
+
+    try:
+        # Read image file
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert('RGB')
+
+        # Preprocess the image
+        input_tensor = transform(image).unsqueeze(0)  # Add batch dimension
+        input_tensor = input_tensor.to(device)
+
+        # Perform prediction
+        with torch.no_grad():
+            output = model(input_tensor)
+            probabilities = torch.softmax(output, dim=1)
+            predicted_class = torch.argmax(probabilities, dim=1).item()
+
+        return JSONResponse({"class_id": predicted_class})
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
