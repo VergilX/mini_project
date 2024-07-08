@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>home - VisionGuard</title>
-    <meta property="og:title" content="home - VisionGuard" />
+    <title>diagnose - VisionGuard</title>
+    <meta property="og:title" content="diagnose - VisionGuard" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
     <meta property="twitter:card" content="summary_large_image" />
@@ -55,21 +55,22 @@
   <body>
       <link rel="stylesheet" href="{{ url_for('css', path='style.css') }}" />
     <div>
-        <link href="{{ url_for('css', path='home.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('css', path='diagnose.css') }}" rel="stylesheet" />
 
-      <div class="home-container">
-        <div class="home-image">
+      <div class="diagnose-container">
+        <div class="diagnose-hero">
+          <div class="diagnose-bg"></div>
           <div
             data-role="Header"
-            class="signed-in-header-header signed-in-header-root-class-name1"
+            class="signed-in-header-header signed-in-header-root-class-name2"
           >
             <div class="signed-in-header-container">
-                <a href="{{ url_for('landing') }}" class="signed-in-header-navlink">
+              <a href="{{ url_for('landing') }}" class="signed-in-header-navlink">
                 <h1 class="signed-in-header-heading TextSM">
                   <span>VISIONGUARD</span>
                 </h1>
               </a>
-              <a href="{{ url_for('diagnose') }}" class="signed-in-header-navlink1">
+              <a href="#" class="signed-in-header-navlink1">
                 <div class="signed-in-header-container1">
                   <svg
                     viewBox="0 0 1097.142857142857 1024"
@@ -222,49 +223,27 @@
               </div>
             </div>
           </div>
-          <img alt="image" src="public/gray-vector.svg" class="home-image1" />
-          <div class="home-bg"></div>
-        </div>
-        <div class="home-container01">
-          <div class="home-container02">
-            <div class="home-container03">
-              <div class="counter-container">
-                <h1 class="counter-text TextXL"><span>89</span></h1>
-                <span class="counter-text1 TextSM">
-                  <span>Successful Cases</span>
-                </span>
+          <div class="diagnose-contact">
+            <div class="label-container">
+              <h6 class="label-text"><span>DIAGNOSE</span></h6>
+            </div>
+            <div class="diagnose-form">
+              <h1 class="diagnose-text">Diagnose</h1>
+              <span class="diagnose-text1 TextXS">ENTER FILE</span>
+              <input
+                type="file"
+                placeholder="Full Name"
+                class="diagnose-textinput TextSM input"
+              />
+              <div class="diagnose-container1">
+                <div
+                  class="secondary-button-container secondary-button-root-class-name5"
+                >
+                  <button class="secondary-button-button TextXS button">
+                    <span>SEND</span>
+                  </button>
+                </div>
               </div>
-            </div>
-            <img alt="image" src="{{ url_for('assets', path='user.png') }}" class="home-image2" />
-            <div class="home-container04">
-              <div class="home-container05"></div>
-              <div class="secondary-button-container">
-                <button class="secondary-button-button TextXS button">
-                  <span>message</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="home-container06">
-              <h3 class="home-text Text2XL">{{ user.name }}</h3>
-            <div class="home-container07">
-              <svg viewBox="0 0 1024 1024" class="home-icon">
-                <path
-                  d="M512 490q44 0 75-31t31-75-31-75-75-31-75 31-31 75 31 75 75 31zM512 86q124 0 211 87t87 211q0 62-31 142t-75 150-87 131-73 97l-32 34q-12-14-32-37t-72-92-91-134-71-147-32-144q0-124 87-211t211-87z"
-                ></path>
-              </svg>
-              <span class="home-text1 TextSM">{{ user.district }}</span>
-            </div>
-            <div class="home-container08">
-              <svg viewBox="0 0 1024 1024" class="home-icon2">
-                <path
-                  d="M810.667 213.333h-597.333l64-85.333h469.333zM929.877 230.059l-127.744-170.325c-8.363-11.136-21.077-17.024-34.133-17.067h-512c-13.909 0-26.283 6.656-34.133 17.067l-127.744 170.325c-1.835 2.389-3.456 5.035-4.736 7.808-2.773 5.803-4.096 12.032-4.053 18.133v597.333c0 35.328 14.379 67.413 37.504 90.496s55.168 37.504 90.496 37.504h597.333c35.328 0 67.413-14.379 90.496-37.504s37.504-55.168 37.504-90.496v-597.333c0-9.344-3.029-18.005-8.064-24.96-0.171-0.213-0.299-0.427-0.469-0.64zM170.667 298.667h682.667v554.667c0 11.776-4.736 22.4-12.501 30.165s-18.389 12.501-30.165 12.501h-597.333c-11.776 0-22.4-4.736-30.165-12.501s-12.501-18.389-12.501-30.165zM640 426.667c0 35.371-14.293 67.285-37.504 90.496s-55.125 37.504-90.496 37.504-67.285-14.293-90.496-37.504-37.504-55.125-37.504-90.496c0-23.552-19.115-42.667-42.667-42.667s-42.667 19.115-42.667 42.667c0 58.88 23.936 112.299 62.464 150.869s91.989 62.464 150.869 62.464 112.299-23.936 150.869-62.464 62.464-91.989 62.464-150.869c0-23.552-19.115-42.667-42.667-42.667s-42.667 19.115-42.667 42.667z"
-                ></path>
-              </svg>
-              <span class="home-text2 TextSM">
-                  {{ user.email }}
-              </span>
-            </div>
             </div>
           </div>
         </div>

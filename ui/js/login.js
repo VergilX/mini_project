@@ -34,6 +34,12 @@ async function login(event) {
     // Get form details
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
+
+    // Error check
+    if ((username == "") || (password == "")) {
+        alert("Please enter credentials");
+        return;
+    }
     
     const options = {
       method: 'POST',

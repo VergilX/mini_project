@@ -1,0 +1,20 @@
+.member-details-container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+.member-details-icon {
+  width: 100px;
+  height: auto;
+}
+.member-details-text {
+  color: var(--dl-color-secondary-100);
+  text-align: center;
+  padding-top: var(--dl-space-space-unitandhalf);
+}
+.member-details-text1 {
+  color: var(--dl-color-secondary-700);
+  text-align: center;
+  text-transform: uppercase;
+}
