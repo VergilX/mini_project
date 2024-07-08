@@ -237,7 +237,7 @@
         </div>
         <div class="chat-section1">
           <div class="chat-container3">
-            <ul class="list">
+            <ul class="list" id="messages">
                 {% for chat in chats %}
               <li class="chat-li list-item">
                 <span class="chat-text01">
@@ -246,19 +246,21 @@
                 </span>
               </li>
               {% endfor %}
+            </ul>
             <div class="chat-form">
               <span class="chat-text19 TextXS">SEND MESSAGE</span>
               <input
                 type="text"
                 placeholder="Enter message"
-                name="messageText"
+                name="message"
+                id="messageText"
                 class="chat-textinput TextSM input"
               />
               <div class="chat-container4">
                 <div
                   class="secondary-button-container secondary-button-root-class-name9"
                 >
-                  <button class="secondary-button-button TextXS button">
+                <button class="secondary-button-button TextXS button" onclick="sendMessage(event);">
                     <span>SEND</span>
                   </button>
                 </div>
@@ -319,5 +321,50 @@
       defer=""
       src="https://unpkg.com/@teleporthq/teleport-custom-scripts"
     ></script>
+
+
+    <script>
+        // var user_id = prompt("user: ")
+        // var target_id = prompt("target user: ")
+        var user = "{{ user.username }}";
+        var target_id = "{{ target.username }}";
+        console.log(`user: ${user}, target_id: ${target_id}`);
+        var ws = new WebSocket(`ws://localhost:8000/ws/${target_id}`);
+        ws.onmessage = function(event) {
+            console.log(`eventdata: ${event.data}`);
+            var messages = document.getElementById('messages');
+
+            var index = event.data.indexOf(":");
+            var chatMessage = event.data.substr(index + 2);
+
+            // Creating elements
+            var li = document.createElement('li');
+            li.classList.add('chat-li', 'list-item');
+
+            var spanOuter = document.createElement('span');
+            spanOuter.classList.add('chat-text01');
+
+            var innerSpan = document.createElement('span');
+            innerSpan.textContent = chatMessage;
+
+            var lineBreak = document.createElement('br');
+
+            // Constructing the structure
+            spanOuter.appendChild(innerSpan);
+            spanOuter.appendChild(lineBreak);
+            li.appendChild(spanOuter);
+
+            // Appending to messages container
+            messages.appendChild(li);
+        };
+        function sendMessage(event) {
+            console.log("sending message to socket")
+            var input = document.getElementById("messageText")
+            data = `{{ user.name }}: ${input.value}`
+            ws.send(data)
+            input.value = ''
+            event.preventDefault()
+        }
+    </script>
   </body>
 </html>
