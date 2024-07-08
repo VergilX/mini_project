@@ -26,6 +26,8 @@ from torchvision import transforms
 from PIL import Image
 import io
 
+CLASS_LABELS = ['ESOTROPIA', 'EXOTROPIA', 'HYPTERTROPIA', 'HYPOTROPIA', 'NORMAL']
+
 # Use the model architecture here
 class SimpleCNN(nn.Module):
     def __init__(self):
@@ -188,9 +190,12 @@ async def register(
         )
 
     database.create(database.USER, data)
-    return {
-        "detail": "User registered successfully",
-    }
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "detail": "User registered successfully",
+        })
 
 
 # Doctor registration
@@ -590,6 +595,7 @@ async def diagnose(
 @app.post("/predict")
 async def predict(
     # user: Annotated[User, Depends(get_current_user)],
+    request: Request,
     file: UploadFile = File(...),
     ):
 
@@ -608,7 +614,13 @@ async def predict(
             probabilities = torch.softmax(output, dim=1)
             predicted_class = torch.argmax(probabilities, dim=1).item()
 
-        return JSONResponse({"class_id": predicted_class})
+        return templates.TemplateResponse(
+                request=request,
+                name="diagnose.html",
+                context={
+                    "prediction": CLASS_LABELS[predicted_class],
+                    "probability": probabilities
+                })
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

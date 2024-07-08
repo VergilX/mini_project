@@ -228,12 +228,14 @@
         <div class="home-container01">
           <div class="home-container02">
             <div class="home-container03">
+            {% if is_doctor %}
               <div class="counter-container">
-                <h1 class="counter-text TextXL"><span>89</span></h1>
+                  <h1 class="counter-text TextXL"><span>{{ user.successful }}</span></h1>
                 <span class="counter-text1 TextSM">
                   <span>Successful Cases</span>
                 </span>
               </div>
+            {% endif %}
             </div>
             <img alt="image" src="{{ url_for('assets', path='user.png') }}" class="home-image2" />
             <div class="home-container04">

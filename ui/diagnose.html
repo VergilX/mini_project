@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>diagnose - VisionGuard</title>
+      <title>Diagnose - VisionGuard</title>
     <meta property="og:title" content="diagnose - VisionGuard" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
@@ -223,29 +223,42 @@
               </div>
             </div>
           </div>
-          <div class="diagnose-contact">
-            <div class="label-container">
-              <h6 class="label-text"><span>DIAGNOSE</span></h6>
-            </div>
-            <div class="diagnose-form">
-              <h1 class="diagnose-text">Diagnose</h1>
-              <span class="diagnose-text1 TextXS">ENTER FILE</span>
-              <input
-                type="file"
-                placeholder="Full Name"
-                class="diagnose-textinput TextSM input"
-              />
-              <div class="diagnose-container1">
-                <div
-                  class="secondary-button-container secondary-button-root-class-name5"
-                >
-                  <button class="secondary-button-button TextXS button">
-                    <span>SEND</span>
-                  </button>
+          {% if prediction %}
+
+                <div class="diagnose-form">
+                  <span class="index-text10 TextXL">{{ prediction }}</span>
+                </div>
+
+            {% endif %}
+          <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data">
+              <div class="diagnose-contact">
+                <div class="label-container">
+                  <h6 class="label-text"><span>DIAGNOSE</span></h6>
+                </div>
+                <div class="diagnose-form">
+                  <h1 class="diagnose-text">Diagnose</h1>
+                  <span class="diagnose-text1 TextXS">ENTER FILE</span>
+                  <input
+                    type="file"
+                    accept=".jpg, .jpeg, .png, .gif, .bmp"
+                    name="file"
+                    placeholder="Enter file"
+                    class="diagnose-textinput TextSM input"
+                    required
+                  />
+                  <div class="diagnose-container1">
+                    <div
+                      class="secondary-button-container secondary-button-root-class-name5"
+                    >
+                    <input type="submit" class="secondary-button-button TextXS button" name="submit" value="DIAGNOSE">
+                      <!-- <button class="secondary-button-button TextXS button"> -->
+                      <!--   <span>SEND</span> -->
+                      <!-- </button> -->
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </form>
         </div>
         <div class="footer-container">
           <div class="footer-container01">

@@ -273,5 +273,10 @@
     <script
             src="{{ url_for('js', path='login.js') }}"
     ></script>
+    <script>
+        if ("{{ detail }}" != "") {
+            alert("User registered successfully!")
+        }
+    </script>
   </body>
 </html>

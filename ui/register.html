@@ -186,106 +186,80 @@
               <h6 class="label-text"><span>REGISTER</span></h6>
             </div>
             <div class="register-form">
-              <h1 class="register-text">Register</h1>
-              <span class="register-text01 TextXS">NAME</span>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required="true"
-                placeholder="Full Name"
-                class="register-textinput TextSM input"
-              />
-              <span class="register-text02 TextXS">USERNAME</span>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                required="true"
-                placeholder="Username"
-                class="register-textinput1 TextSM input"
-              />
-              <span class="register-text03 TextXS">PASSWORD</span>
-              <input
-                type="password"
-                id="password"
-                required="true"
-                placeholder="Password"
-                class="register-textinput2 TextSM input"
-              />
-              <span class="register-text04 TextXS">EMAIL</span>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                required="true"
-                placeholder="Email"
-                class="register-textinput3 TextSM input"
-              />
-              <span class="register-text05 TextXS">DISTRICT</span>
-              <div
-                data-thq="thq-dropdown"
-                class="register-thq-dropdown list-item"
-              >
-                <div
-                  data-thq="thq-dropdown-toggle"
-                  class="register-dropdown-toggle"
-                >
-                  <span class="register-text06">Select District</span>
+                <form action="{{ url_for('register') }}" method="post">
+                  <h1 class="register-text">Register</h1>
+                  <span class="register-text01 TextXS">NAME</span>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required="true"
+                    placeholder="Full Name"
+                    class="register-textinput TextSM input"
+                  />
+                  <span class="register-text02 TextXS">USERNAME</span>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    required="true"
+                    placeholder="Username"
+                    class="register-textinput1 TextSM input"
+                  />
+                  <span class="register-text03 TextXS">PASSWORD</span>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required="true"
+                    placeholder="Password"
+                    class="register-textinput2 TextSM input"
+                  />
+                  <span class="register-text04 TextXS">EMAIL</span>
+                  <input
+                    type="text"
+                    id="email"
+                    name="email"
+                    required="true"
+                    placeholder="Email"
+                    class="register-textinput3 TextSM input"
+                  />
+                  <span class="register-text05 TextXS">DISTRICT</span>
                   <div
-                    data-thq="thq-dropdown-arrow"
-                    class="register-dropdown-arrow"
+                    data-thq="thq-dropdown"
+                    class="register-thq-dropdown list-item"
                   >
-                    <svg viewBox="0 0 1024 1024" class="register-icon">
-                      <path d="M426 726v-428l214 214z"></path>
-                    </svg>
+                    <select name="district">
+                        <option value="#">Select District</option>
+                        {% for district in districts %}
+                        <option value="{{ district.code }}">{{ district.name }}</option>
+                        
+                        <!--
+                      <li
+                        data-thq="thq-dropdown"
+                        class="register-dropdown list-item"
+                      >
+                        <div
+                          data-thq="thq-dropdown-toggle"
+                          class="register-dropdown-toggle1"
+                        >
+                        <span class="register-text07">{{ district.name }}</span>
+                        </div>
+                      </li>
+                        -->
+                      {% endfor %}
+                    </select>
                   </div>
-                </div>
-                <ul data-thq="thq-dropdown-list" class="register-dropdown-list">
-                  <li
-                    data-thq="thq-dropdown"
-                    class="register-dropdown list-item"
-                  >
+                  <div class="register-container1">
                     <div
-                      data-thq="thq-dropdown-toggle"
-                      class="register-dropdown-toggle1"
+                      class="secondary-button-container secondary-button-root-class-name1"
                     >
-                      <span class="register-text07">Sub-menu Item</span>
+                      <button type="submit" class="secondary-button-button TextXS button">
+                        <span>REGISTER</span>
+                      </button>
                     </div>
-                  </li>
-                  <li
-                    data-thq="thq-dropdown"
-                    class="register-dropdown1 list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="register-dropdown-toggle2"
-                    >
-                      <span class="register-text08">Sub-menu Item</span>
-                    </div>
-                  </li>
-                  <li
-                    data-thq="thq-dropdown"
-                    class="register-dropdown2 list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="register-dropdown-toggle3"
-                    >
-                      <span class="register-text09">Sub-menu Item</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div class="register-container1">
-                <div
-                  class="secondary-button-container secondary-button-root-class-name1"
-                >
-                  <button class="secondary-button-button TextXS button">
-                    <span>REGISTER</span>
-                  </button>
-                </div>
-              </div>
+                  </div>
+                </form>
             </div>
           </div>
         </div>
