@@ -26,7 +26,17 @@ from torchvision import transforms
 from PIL import Image
 import io
 
-CLASS_LABELS = ['ESOTROPIA', 'EXOTROPIA', 'HYPTERTROPIA', 'HYPOTROPIA', 'NORMAL']
+CLASS_LABELS = ['ESOTROPIA', 'EXOTROPIA', 'HYPERTROPIA', 'HYPOTROPIA', 'NORMAL']
+
+DISEASE_DATA = {
+    "ESOTROPIA": "An esotropia is an eye misalignment in which one eye is deviated inward toward the nose. The deviation may be constant or intermittent. The deviating eye may always be the same eye or may alternate between the two eyes.",
+
+    "EXOTROPIA": "Exotropia is a type of eye misalignment, where one eye deviates outward. The deviation may be constant or intermittent, and the deviating eye may always be one eye or may alternate between the two eyes.",
+
+    "HYPERTROPIA": "Vertical strabismus describes a vertical misalignment of the eyes. By convention, the misalignment is typically labelled by the higher, or hypertropic, eye. The vertical misalignment can also be labelled by the lower, or hypotropic eye.",
+
+    "NORMAL": "You've got normal eyes"
+}
 
 # Use the model architecture here
 class SimpleCNN(nn.Module):
@@ -210,7 +220,7 @@ async def register_get(request: Request):
         specialisations = session.exec(specialisation_query)
 
         return templates.TemplateResponse(
-            request=request, name="register_doc.html",
+            request=request, name="registerdoc.html",
             context={
                 "hospitals": hospitals,
                 "specialisations": specialisations
@@ -256,9 +266,12 @@ async def register_doc(
         )
 
     database.create(database.DOCTOR, data)
-    return {
-        "detail": "Doctor registered successfully",
-    }
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "detail": "Doctor registered successfully",
+        })
 
 
 # You don't log out with jwt in backend
@@ -594,7 +607,7 @@ async def diagnose(
 
 @app.post("/predict")
 async def predict(
-    # user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[User, Depends(get_current_user)],
     request: Request,
     file: UploadFile = File(...),
     ):
@@ -618,7 +631,9 @@ async def predict(
                 request=request,
                 name="diagnose.html",
                 context={
+                    "user": user,
                     "prediction": CLASS_LABELS[predicted_class],
+                    "info": DISEASE_DATA[CLASS_LABELS[predicted_class]],
                     "probability": probabilities
                 })
 
