@@ -53,19 +53,19 @@
     </style>
   </head>
   <body>
-    <link rel="stylesheet" href="./style.css" />
+      <link rel="stylesheet" href="{{ url_for('css', path='style.css') }}" />
     <div>
-      <link href="./registerdoc.css" rel="stylesheet" />
+        <link href="{{ url_for('css', path='registerdoc.css') }}" rel="stylesheet" />
 
       <div class="registerdoc-container">
         <div class="registerdoc-hero">
           <div class="registerdoc-bg"></div>
           <div data-role="Header" class="header-header">
             <div class="header-container">
-              <a href="index.html" class="header-navlink">
+                <a href="{{ url_for('landing') }}" class="header-navlink">
                 <h1 class="header-heading TextSM"><span>VISIONGUARD</span></h1>
               </a>
-              <a href="login.html" class="header-navlink1">
+              <a href="{{ url_for('login_get') }}" class="header-navlink1">
                 <div class="header-container1">
                   <svg viewBox="0 0 1024 1024" class="header-icon">
                     <path
@@ -75,7 +75,7 @@
                   <span class="header-text TextSM">LOGIN</span>
                 </div>
               </a>
-              <a href="register.html" class="header-navlink2">
+              <a href="{{ url_for('register_get') }}" class="header-navlink2">
                 <div class="header-container2">
                   <svg viewBox="0 0 1024 1024" class="header-icon02">
                     <path
@@ -131,7 +131,7 @@
                 </div>
               </div>
               <div class="header-mid">
-                <a href="home.html" class="header-navlink4">
+                  <a href="{{ url_for('home') }}" class="header-navlink4">
                   <div class="header-container4">
                     <svg viewBox="0 0 1024 1024" class="header-icon17">
                       <path
@@ -186,178 +186,94 @@
               <h6 class="label-text"><span>REGISTER</span></h6>
             </div>
             <div class="registerdoc-form">
-              <h1 class="registerdoc-text">Doctor Registration</h1>
-              <span class="registerdoc-text01 TextXS">NAME</span>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required="true"
-                placeholder="Full Name"
-                class="registerdoc-textinput TextSM input"
-              />
-              <span class="registerdoc-text02 TextXS">USERNAME</span>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                required="true"
-                placeholder="Username"
-                class="registerdoc-textinput1 TextSM input"
-              />
-              <span class="registerdoc-text03 TextXS">PASSWORD</span>
-              <input
-                type="password"
-                id="password"
-                required="true"
-                placeholder="Password"
-                class="registerdoc-textinput2 TextSM input"
-              />
-              <span class="registerdoc-text04 TextXS">EMAIL</span>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                required="true"
-                placeholder="Email"
-                class="registerdoc-textinput3 TextSM input"
-              />
-              <span class="registerdoc-text05 TextXS">HOSPITAL</span>
-              <div
-                data-thq="thq-dropdown"
-                class="registerdoc-thq-dropdown list-item"
-              >
-                <div
-                  data-thq="thq-dropdown-toggle"
-                  class="registerdoc-dropdown-toggle"
-                >
-                  <span class="registerdoc-text06">Select Hospital</span>
+
+                <form action="{{ url_for('register_doc') }}" method="post">
+                  <h1 class="registerdoc-text">Doctor Registration</h1>
+                  <span class="registerdoc-text01 TextXS">NAME</span>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required="true"
+                    placeholder="Full Name"
+                    class="registerdoc-textinput TextSM input"
+                  />
+                  <span class="registerdoc-text02 TextXS">USERNAME</span>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    required="true"
+                    placeholder="Username"
+                    class="registerdoc-textinput1 TextSM input"
+                  />
+                  <span class="registerdoc-text03 TextXS">PASSWORD</span>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required="true"
+                    placeholder="Password"
+                    class="registerdoc-textinput2 TextSM input"
+                  />
+                  <span class="registerdoc-text04 TextXS">EMAIL</span>
+                  <input
+                    type="text"
+                    id="email"
+                    name="email"
+                    required="true"
+                    placeholder="Email"
+                    class="registerdoc-textinput3 TextSM input"
+                  />
+
+                  <span class="register-text05 TextXS">SELECT HOSPITAL</span>
                   <div
-                    data-thq="thq-dropdown-arrow"
-                    class="registerdoc-dropdown-arrow"
+                    data-thq="thq-dropdown"
+                    class="register-thq-dropdown list-item"
                   >
-                    <svg viewBox="0 0 1024 1024" class="registerdoc-icon">
-                      <path d="M426 726v-428l214 214z"></path>
-                    </svg>
+                    <select name="hosp_id">
+                        <option value="#">Select Hospital</option>
+                        {% for hospital in hospitals %}
+                        <option value="{{ hospital.id }}">{{ hospital.name }}</option>
+                      {% endfor %}
+                    </select>
                   </div>
-                </div>
-                <ul
-                  data-thq="thq-dropdown-list"
-                  class="registerdoc-dropdown-list"
-                >
-                  <li
-                    data-thq="thq-dropdown"
-                    class="registerdoc-dropdown list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="registerdoc-dropdown-toggle1"
-                    >
-                      <span class="registerdoc-text07">Sub-menu Item</span>
-                    </div>
-                  </li>
-                  <li
-                    data-thq="thq-dropdown"
-                    class="registerdoc-dropdown1 list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="registerdoc-dropdown-toggle2"
-                    >
-                      <span class="registerdoc-text08">Sub-menu Item</span>
-                    </div>
-                  </li>
-                  <li
-                    data-thq="thq-dropdown"
-                    class="registerdoc-dropdown2 list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="registerdoc-dropdown-toggle3"
-                    >
-                      <span class="registerdoc-text09">Sub-menu Item</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <span class="registerdoc-text10 TextXS">SPECIALIZATION</span>
-              <div
-                data-thq="thq-dropdown"
-                class="registerdoc-thq-dropdown1 list-item"
-              >
-                <div
-                  data-thq="thq-dropdown-toggle"
-                  class="registerdoc-dropdown-toggle4"
-                >
-                  <span class="registerdoc-text11">Select Specialization</span>
+
+
+                  <span class="register-text05 TextXS">SELECT SPECIALISATION</span>
                   <div
-                    data-thq="thq-dropdown-arrow"
-                    class="registerdoc-dropdown-arrow1"
+                    data-thq="thq-dropdown"
+                    class="register-thq-dropdown list-item"
                   >
-                    <svg viewBox="0 0 1024 1024" class="registerdoc-icon2">
-                      <path d="M426 726v-428l214 214z"></path>
-                    </svg>
+                    <select name="specialisation_id">
+                        <option value="#">Select Specialisation</option>
+                        {% for sp in specialisations %}
+                        <option value="{{ sp.id }}">{{ sp.name }}</option>
+                      {% endfor %}
+                    </select>
                   </div>
-                </div>
-                <ul
-                  data-thq="thq-dropdown-list"
-                  class="registerdoc-dropdown-list1"
-                >
-                  <li
-                    data-thq="thq-dropdown"
-                    class="registerdoc-dropdown3 list-item"
-                  >
+
+                  <span class="registerdoc-text15 TextXS">
+                    NUMBER OF SUCCESSFUL CASES
+                  </span>
+                  <input
+                    type="number"
+                    id="successful"
+                    name="successful"
+                    required="true"
+                    placeholder="Enter number of successful cases"
+                    class="registerdoc-textinput4 TextSM input"
+                  />
+                  <div class="registerdoc-container1">
                     <div
-                      data-thq="thq-dropdown-toggle"
-                      class="registerdoc-dropdown-toggle5"
+                      class="secondary-button-container secondary-button-root-class-name4"
                     >
-                      <span class="registerdoc-text12">Sub-menu Item</span>
+                      <button class="secondary-button-button TextXS button">
+                        <span>REGISTER</span>
+                      </button>
                     </div>
-                  </li>
-                  <li
-                    data-thq="thq-dropdown"
-                    class="registerdoc-dropdown4 list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="registerdoc-dropdown-toggle6"
-                    >
-                      <span class="registerdoc-text13">Sub-menu Item</span>
-                    </div>
-                  </li>
-                  <li
-                    data-thq="thq-dropdown"
-                    class="registerdoc-dropdown5 list-item"
-                  >
-                    <div
-                      data-thq="thq-dropdown-toggle"
-                      class="registerdoc-dropdown-toggle7"
-                    >
-                      <span class="registerdoc-text14">Sub-menu Item</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <span class="registerdoc-text15 TextXS">
-                NUMBER OF SUCCESSFUL CASES
-              </span>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                required="true"
-                placeholder="Email"
-                class="registerdoc-textinput4 TextSM input"
-              />
-              <div class="registerdoc-container1">
-                <div
-                  class="secondary-button-container secondary-button-root-class-name4"
-                >
-                  <button class="secondary-button-button TextXS button">
-                    <span>REGISTER</span>
-                  </button>
-                </div>
-              </div>
+                  </div>
+                  </form>
             </div>
           </div>
         </div>
